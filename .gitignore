@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+ml/digital_twin_model.pkl
+ml/daily_progress.csv
+.ollama/

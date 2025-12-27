@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">👤 Digital Twin Analysis</h2>
+
+<form method="POST" action="/digital-twin" class="row g-3">
+
+    <div class="col-md-3">
+        <input type="number" name="day" class="form-control" placeholder="Day (e.g. 7)" required>
+    </div>
+
+    <div class="col-md-3">
+        <input type="number" name="planned" class="form-control" placeholder="Planned Minutes" required>
+    </div>
+
+    <div class="col-md-3">
+        <input type="number" name="sessions" class="form-control" placeholder="Sessions" required>
+    </div>
+
+    <div class="col-md-3">
+        <input type="number" name="actual" class="form-control" placeholder="Actual Minutes" required>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary mt-2">
+            Compare with Digital Twin
+        </button>
+    </div>
+
+</form>
+
+{% if result %}
+<div class="card mt-4 p-4">
+    <h5>📊 Digital Twin Result</h5>
+
+    <p><b>Ideal Minutes:</b> {{ result.ideal }}</p>
+    <p><b>Actual Minutes:</b> {{ result.actual }}</p>
+    <p><b>Lag:</b> {{ result.lag }} minutes</p>
+    <p><b>Consistency:</b> {{ result.consistency }}%</p>
+
+    <hr>
+
+    <p><b>📈 Trend:</b> {{ result.trend }}</p>
+    <p><b>🤖 Feedback:</b> {{ result.feedback }}</p>
+    <p><b>🔮 Catch-up Plan:</b> {{ result.catchup }}</p>
+</div>
+{% endif %}
+
+{% endblock %}

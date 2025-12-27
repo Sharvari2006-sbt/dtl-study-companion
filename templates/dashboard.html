@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">📊 Dashboard</h2>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h6>Actual Study Time</h6>
+            <h2>45 min</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h6>Digital Twin Target</h6>
+            <h2>90 min</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h6>Emotion</h6>
+            <div class="card p-4">
+    <h6>Emotion Status</h6>
+
+    {% if emotion == "Stressed" %}
+        <span class="badge bg-danger">😖 Stressed</span>
+    {% elif emotion == "Focused" %}
+        <span class="badge bg-success">😊 Focused</span>
+    {% elif emotion == "Motivated" %}
+        <span class="badge bg-primary">🔥 Motivated</span>
+    {% else %}
+        <span class="badge bg-warning">😴 Tired</span>
+    {% endif %}
+</div>
+
+<div class="card p-4 mt-3">
+    <h6>Suggested Action</h6>
+
+    {% if emotion == "Stressed" %}
+        <p>Take a short break and start a 25-minute focus session.</p>
+    {% elif emotion == "Focused" %}
+        <p>You are doing well. Continue with your study plan.</p>
+    {% elif emotion == "Motivated" %}
+        <p>Challenge your Digital Twin with an extended session.</p>
+    {% else %}
+        <p>Try handwritten notes to reduce screen fatigue.</p>
+    {% endif %}
+</div>
+
+
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mt-4">
+    <h6>Progress vs Digital Twin</h6>
+    <div class="progress mt-2">
+        <div class="progress-bar bg-success" style="width:50%">50%</div>
+    </div>
+</div>
+
+{% endblock %}

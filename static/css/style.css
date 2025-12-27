@@ -1,0 +1,272 @@
+/* =========================
+   GLOBAL
+========================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+
+    /* LIGHT MODE DEFAULT */
+    background: #eef2f7;
+    color: #020617;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* =========================
+   SIDEBAR (LIGHT MODE)
+========================= */
+.sidebar {
+    width: 240px;
+    background: #ffffff;
+    padding: 24px 18px;
+    box-shadow: 6px 0 20px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+    color: #2563eb;
+}
+
+.nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #334155;
+    text-decoration: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    background: #e0e7ff;
+    color: #1d4ed8;
+    transform: translateX(6px);
+}
+
+/* =========================
+   MAIN CONTENT (LIGHT)
+========================= */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #eef2f7;
+}
+
+/* =========================
+   TOP BAR (LIGHT)
+========================= */
+.topbar {
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar .title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* =========================
+   THEME BUTTON
+========================= */
+.theme-btn {
+    background: linear-gradient(135deg, #2563eb, #6366f1);
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.2s;
+}
+
+.theme-btn:hover {
+    transform: scale(1.1);
+}
+
+/* =========================
+   CONTENT AREA
+========================= */
+.content-area {
+    padding: 50px;
+    overflow-y: auto;
+}
+
+/* =========================
+   HERO
+========================= */
+.hero {
+    text-align: center;
+    margin-top: 60px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    margin-top: 12px;
+    font-size: 18px;
+    color: #475569;
+}
+
+.hero .btn-primary {
+    margin-top: 30px;
+    padding: 14px 28px;
+    font-size: 18px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #2563eb, #6366f1);
+    border: none;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+}
+
+/* =========================
+   FEATURE CARDS (LIGHT)
+========================= */
+.feature-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+}
+
+.feature-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+.feature-card h4 {
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #475569;
+    font-size: 15px;
+}
+
+/* =========================
+   DARK THEME (ON TOGGLE)
+========================= */
+.dark-theme {
+    background: linear-gradient(135deg, #0f172a, #020617);
+    color: #e5e7eb;
+}
+
+.dark-theme .main-content {
+    background: radial-gradient(circle at top, #020617, #000000);
+}
+
+.dark-theme .sidebar {
+    background: linear-gradient(180deg, #020617, #0f172a);
+}
+
+.dark-theme .logo {
+    color: #38bdf8;
+}
+
+.dark-theme .nav-links a {
+    color: #cbd5e1;
+}
+
+.dark-theme .nav-links a:hover {
+    background: rgba(56,189,248,0.15);
+    color: #38bdf8;
+}
+
+.dark-theme .topbar {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.dark-theme .feature-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.chat-box {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    height: 400px;
+    overflow-y: auto;
+    border-radius: 16px;
+}
+
+.user-message {
+    text-align: right;
+    margin: 10px 0;
+    color: #38bdf8;
+}
+
+.bot-message {
+    text-align: left;
+    margin: 10px 0;
+    color: #e5e7eb;
+}
+/* =========================
+   CHAT UI (FIXED)
+========================= */
+
+.chat-box {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+    height: 450px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+}
+
+/* BOT MESSAGE */
+.bot-message {
+    background: #e0f2fe;
+    color: #020617;        /* DARK TEXT (VISIBLE) */
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    max-width: 70%;
+}
+
+/* USER MESSAGE */
+.user-message {
+    background: #2563eb;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    margin-left: auto;
+    max-width: 70%;
+}
+
