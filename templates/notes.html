@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="fas fa-book-open"></i> Adaptive Study Notes</h2>
+        <span class="badge badge-pill badge-info" id="mood-status">Status: Detecting Mood...</span>
+    </div>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">Save New Concept</div>
+                <div class="card-body">
+                    <form action="/save_note" method="POST">
+                        <div class="form-group">
+                            <label>Topic Name (Syllabus-aligned)</label>
+                            <input type="text" name="topic" class="form-control" placeholder="e.g., Database Management" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Content</label>
+                            <textarea name="content" id="note-content" class="form-control" rows="8" placeholder="Paste important lines here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Add to My Study Path</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm border-info mb-4">
+                <div class="card-body">
+                    <h5 class="text-info">AI Study Assistant</h5>
+                    <p class="small text-muted">Feeling stressed? We'll simplify the text for you. [cite: 67]</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-info btn-sm mb-2" onclick="simplifyText()">
+                            <i class="fas fa-magic"></i> Simplify this Concept
+                        </button>
+                        
+                        <button class="btn btn-outline-secondary btn-sm mb-2" onclick="readAloud()">
+                            <i class="fas fa-volume-up"></i> Read Aloud (Voice Revision)
+                        </button>
+                        
+                        <a href="https://www.youtube.com/results?search_query=concept+explanation" target="_blank" class="btn btn-outline-danger btn-sm">
+                            <i class="fab fa-youtube"></i> Find Curated Videos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stress-alert" class="alert alert-warning d-none">
+                <strong>Taking a break?</strong> You've been studying hard. Try a 5-minute breathing exercise.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple Voice Revision Logic
+    function readAloud() {
+        const text = document.getElementById('note-content').value;
+        if (text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Please enter some text to read!");
+        }
+    }
+
+    // Mock-up for AI Simplification (Addressing 46.8% difficulty)
+    function simplifyText() {
+        const content = document.getElementById('note-content');
+        content.value = "AI SIMPLIFIED: " + content.value.substring(0, 100) + "... (Simplified version loaded)";
+        document.getElementById('mood-status').innerText = "Status: Calm & Focused";
+    }
+</script>
+{% endblock %}
