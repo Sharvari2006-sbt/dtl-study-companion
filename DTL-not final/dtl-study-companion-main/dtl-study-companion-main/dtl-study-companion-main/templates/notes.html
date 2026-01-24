@@ -109,10 +109,14 @@ Read Aloud
 
 <h4>📒 My Saved Notes & Highlights</h4>
 
-<button onclick="exportNotes()"
-        class="btn btn-outline-success mb-3">
-📥 Export Notes as PDF & Clear
-</button>
+
+<a href="/export_notes"
+   onclick="setTimeout(() => location.reload(), 800)"
+   class="btn btn-success">
+
+ 📥 Export Notes
+</a>
+
 
 
 <div class="row" id="saved-notes-row">

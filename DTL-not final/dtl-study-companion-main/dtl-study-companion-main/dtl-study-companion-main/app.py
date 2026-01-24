@@ -7,7 +7,7 @@ import os
 import io
 from fpdf import FPDF
 from PyPDF2 import PdfReader
-from flask import send_file
+
 
 
 
@@ -261,22 +261,41 @@ def handwriting():
 def timer():
     return render_template("timer.html", show_layout=True)
 
+
+
+
 # ================= DIGITAL TWIN =================
 
 @app.route("/digital-twin", methods=["GET", "POST"])
 @login_required
 def digital_twin():
-
     global latest_twin_data, peak_cache
+    # RESET OLD DATA WHEN PAGE OPENS
+    if request.method == "GET":
 
-    result = None
+        session.pop("twin_lag", None)
+        session.pop("twin_consistency", None)
+        session.pop("twin_emotion", None)
+
+        peak_cache["peak_result"] = None
+        peak_cache["peak_insight"] = None
+        peak_cache["peak_recommendation"] = None
+
+    
+
+    prediction_message = None
+
+    # SAFE DEFAULTS
+    result = {"lag": 0, "consistency": 0, "progress": 0}
+    daily_minutes = 0
+    remaining_minutes = 0
+    days_required = 0
 
     if request.method == "POST":
 
         mode = request.form.get("mode", "performance")
 
-        # ================= BEHAVIORAL TWIN =================
-
+        # ================= BEHAVIORAL =================
         if mode == "behavioral":
 
             session_length = int(request.form.get("peak_minutes", 0))
@@ -307,7 +326,7 @@ def digital_twin():
                 show_layout=True
             )
 
-        # ================= PERFORMANCE TWIN =================
+        # ================= PERFORMANCE =================
 
         selected_subject = request.form.get("subject", "ALL")
         days_filter = int(request.form.get("days_filter", 1))
@@ -339,6 +358,7 @@ def digital_twin():
         days = row[0] if row[0] else 1
         actual_minutes = row[1]
 
+        # ===== CALL MODEL FIRST =====
         result = get_digital_twin(
             days,
             planned_minutes,
@@ -346,19 +366,48 @@ def digital_twin():
             actual_minutes
         )
 
-        latest_twin_data["lag"] = result["lag"]
-        latest_twin_data["consistency"] = result["consistency"]
+        if not result:
+            result = {"lag": 0, "consistency": 0, "progress": 0}
 
-        if result["consistency"] < 50:
-            latest_twin_data["emotion"] = "Stressed"
-        elif result["consistency"] < 75:
-            latest_twin_data["emotion"] = "Tired"
-        else:
-            latest_twin_data["emotion"] = "Focused"
+        # ===== PREDICTION LOGIC =====
+        daily_study_hours = 2
+        daily_minutes = daily_study_hours * 60
+
+        progress_percent = result["progress"]
+        remaining_percent = 100 - progress_percent
+
+        remaining_minutes = int((remaining_percent / 100) * planned_minutes)
+
+        if daily_minutes > 0:
+            days_required = round(remaining_minutes / daily_minutes, 2)
+
+        lag_minutes = result["lag"]
+
+        lag_hr = lag_minutes // 60
+        lag_min = lag_minutes % 60
+
+        prediction_message = (
+            f"You are lagging by {lag_hr} hr {lag_min} min. "
+            f"If you study {daily_study_hours} hours daily, "
+            f"you can complete this in {days_required} days."
+        )
+
+        # ===== UPDATE CHAT CONTEXT =====
+        session["twin_lag"] = result["lag"]
+        session["twin_consistency"] = result["consistency"]
+
+    if result["consistency"] < 50:
+        session["twin_emotion"] = "Stressed"
+    elif result["consistency"] < 75:
+        session["twin_emotion"] = "Tired"
+    else:
+        session["twin_emotion"] = "Focused"
+
 
     return render_template(
         "digital_twin.html",
         result=result,
+        prediction_message=prediction_message,
         peak_result=peak_cache["peak_result"],
         peak_insight=peak_cache["peak_insight"],
         peak_recommendation=peak_cache["peak_recommendation"],
@@ -368,29 +417,77 @@ def digital_twin():
 
 
 
-# ================= CHAT =================
 
+# ================= CHAT =================
 @app.route("/chat", methods=["GET"])
 @login_required
 def chat_page():
     return render_template("chat.html", show_layout=True)
 
-
 @app.route("/chat", methods=["POST"])
 @login_required
 def chat_api():
 
+    try:
+        data = request.get_json()
+        user_message = data.get("message", "")
+
+        emotion = session.get("twin_emotion", "Neutral")
+        lag = session.get("twin_lag", 0)
+        consistency = session.get("twin_consistency", 0)
+
+        # DIGITAL TWIN QUERY
+        if "digital" in user_message.lower() or "analyze" in user_message.lower():
+
+            if lag > 0:
+                lag_hr = lag // 60
+                lag_min = lag % 60
+
+                reply = (
+                    f"Hey 😊 You're slightly behind today.\n"
+                    f"About {lag_hr} hr {lag_min} min.\n"
+                )
+
+                if consistency >= 70:
+                    reply += "But your consistency is good 💪 Just push a bit more!"
+                else:
+                    reply += "Let’s add one focused 30-minute session 👍"
+
+            else:
+                reply = "🔥 You're on track today! Keep this rhythm going!"
+
+        else:
+            reply = generate_ai_reply(
+                user_message,
+                emotion,
+                lag,
+                consistency,
+                peak_cache["peak_insight"],
+                peak_cache["peak_recommendation"]
+            )
+
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        print("CHAT ERROR:", e)
+        return jsonify({"reply": "😅 Give me a second, I'm warming up!"})
+    
+
+@app.route("/update_twin_session", methods=["POST"])
+@login_required
+def update_twin_session():
+
     data = request.json
-    user_message = data["message"]
 
-    reply = generate_ai_reply(
-        user_message,
-        latest_twin_data["emotion"],
-        latest_twin_data["lag"],
-        latest_twin_data["consistency"]
-    )
+    session["twin_lag"] = int(data.get("lag", 0))
+    session["twin_consistency"] = int(data.get("consistency", 0))
+    session["twin_emotion"] = data.get("emotion", "Neutral")
 
-    return jsonify({"reply": reply})
+    return jsonify({"status": "ok"})
+
+
+
+
 
 # ================= NOTES =================
 
@@ -509,6 +606,7 @@ def save_highlight():
 
 
 # ================= EXPORT PDF =================
+from flask import Response
 @app.route("/export_notes")
 @login_required
 def export_notes():
@@ -519,9 +617,8 @@ def export_notes():
     cursor.execute("SELECT content FROM highlights")
     rows = cursor.fetchall()
 
-    conn.close()
-
     if not rows:
+        conn.close()
         return "No highlights to export"
 
     pdf = FPDF()
@@ -530,11 +627,27 @@ def export_notes():
     pdf.set_font("Helvetica", size=12)
 
     for row in rows:
-        pdf.multi_cell(0, 8, row["content"])
+        text = row["content"]
+        text = text.encode("ascii", "ignore").decode("ascii")
+        pdf.multi_cell(0, 8, text)
         pdf.ln(4)
 
-    # ===== FORCE DOWNLOAD DIRECTLY =====
-    return pdf.output("My_Study_Notes.pdf", "D")
+    pdf_bytes = bytes(pdf.output(dest="S"), "latin-1")
+
+    # ✅ CLEAR TABLE
+    cursor.execute("DELETE FROM highlights")
+    conn.commit()
+    conn.close()
+
+    response = Response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=My_Study_Notes.pdf"
+
+    return response
+
+
+
+
 
 
 

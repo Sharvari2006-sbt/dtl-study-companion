@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<link rel="stylesheet"
-    href="dtl-study-companion-main\dtl-study-companion-main\dtl-study-companion-main\static\css\style.css">
-<h2 class="mb-4">👤 Digital Twin Analysis</h2>
+
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 
 <!-- ================= TAB BUTTONS ================= -->
 <div class="mb-4">
@@ -83,8 +83,13 @@
 
         <p class="mt-3"><b>Status:</b> <span id="r_status"></span></p>
         <div class="alert alert-info mt-2">
-            💡 <span id="r_suggestion"></span>
-        </div>
+    💡 
+        <span id="r_suggestion">Keep improving with consistent sessions.</span>
+
+
+</div>
+
+
     </div>
 </div>
 
@@ -162,30 +167,86 @@ display:flex;align-items:center;justify-content:center;">
     function closePopup() { studyPopup.style.display = "none"; }
     function openTimer() { closePopup(); window.open("/timer", "_blank"); }
 
+
+
+
     /* ===== Compare ===== */
     function compareDigitalTwin() {
-        const subject = localStorage.getItem("dt_subject");
-        const hours = parseFloat(localStorage.getItem("dt_hours"));
-        const mood = localStorage.getItem("dt_mood");
-        const sec = parseInt(localStorage.getItem("timerStoppedSeconds") || 0);
 
-        const plannedMin = hours * 60;
-        const actualMin = sec / 60;
-        dt_actual.value = formatToMMSS(sec);
+    const subject = dt_subject.value === "Other"
+        ? custom_subject.value.trim()
+        : dt_subject.value;
 
-        let progress = Math.min((actualMin / plannedMin) * 100, 100);
-        dt_progress_fill.style.width = progress + "%";
-        dt_progress_fill.style.background = progress >= 80 ? "#22c55e" : progress >= 40 ? "#facc15" : "#ef4444";
-        progress_percent.innerText = progress.toFixed(1) + "%";
+    const hours = parseFloat(dt_hours.value);
+    const mood = dt_mood.value;
 
-        r_subject.innerText = subject;
-        r_mood.innerText = mood;
-        r_planned.innerText = hours + " hr";
-        r_actual.innerText = formatToMMSS(sec);
-        r_status.innerText = progress >= 80 ? "Goal Achieved 🎉" : progress >= 40 ? "Almost There 💪" : "Needs Improvement 📉";
-        r_suggestion.innerText = "Keep improving with consistent sessions.";
-        dt_result.style.display = "block";
+    if (!subject || !hours || !mood) {
+        alert("Fill all fields before comparing");
+        return;
     }
+
+    const sec = parseInt(localStorage.getItem("timerStoppedSeconds") || 0);
+
+    const plannedMin = hours * 60;
+    const actualMin = sec / 60;
+    const lagMin = Math.max(plannedMin - actualMin, 0);
+
+    const dailyMinutes = plannedMin;
+
+    let lagMsg = "";
+
+    if (lagMin > 0) {
+
+        const lagHr = Math.floor(lagMin / 60);
+        const lagM = Math.floor(lagMin % 60);
+        const daysRequired = (lagMin / dailyMinutes).toFixed(2);
+
+        lagMsg = `You are lagging by ${lagHr} hr ${lagM} min.
+If you study ${hours} hours daily, you can complete this in ${daysRequired} days 💪`;
+
+    } else {
+
+        lagMsg = "Excellent! You completed your planned target 🎉";
+    }
+
+    dt_actual.value = formatToMMSS(sec);
+
+    let progress = Math.min((actualMin / plannedMin) * 100, 100);
+
+    dt_progress_fill.style.width = progress + "%";
+    dt_progress_fill.style.background =
+        progress >= 80 ? "#22c55e" :
+        progress >= 40 ? "#facc15" :
+        "#ef4444";
+
+    progress_percent.innerText = progress.toFixed(1) + "%";
+
+    r_subject.innerText = subject;
+    r_mood.innerText = mood;
+    r_planned.innerText = hours + " hr";
+    r_actual.innerText = formatToMMSS(sec);
+
+    r_status.innerText =
+        progress >= 80 ? "Goal Achieved 🎉" :
+        progress >= 40 ? "Almost There 💪" :
+        "Needs Improvement 📉";
+
+    r_suggestion.innerText = lagMsg;
+
+    dt_result.style.display = "block";
+
+    fetch("/update_twin_session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            lag: Math.round(plannedMin - actualMin),
+            consistency: Math.round(progress),
+            emotion: progress >= 75 ? "Focused" :
+                     progress >= 50 ? "Tired" : "Stressed"
+        })
+    });
+}
+
 
     /* ===== Behavioral Line Chart ===== */
     let behaviorChart = null;

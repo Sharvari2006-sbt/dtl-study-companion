@@ -3,7 +3,7 @@
 
 <h2 class="mb-4">🤖 AI Study Companion</h2>
 
-<div class="chat-box" id="chatBox">
+<div class="chat-box" id="chatBox" style="height:400px;overflow-y:auto;border:1px solid #ddd;padding:15px;border-radius:10px;">
     <div class="bot-message">
         Hi! I’m your AI study companion. How are you feeling today?
     </div>
@@ -12,7 +12,7 @@
 <form id="chatForm" class="mt-3">
     <input type="text" id="userInput" class="form-control"
            placeholder="Type your message..." required>
-    <button class="btn btn-primary mt-2">Send</button>
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
 </form>
 
 <script>
@@ -21,21 +21,38 @@ const chatBox = document.getElementById("chatBox");
 
 form.onsubmit = async (e) => {
     e.preventDefault();
-    const input = document.getElementById("userInput");
-    const message = input.value;
 
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    // SHOW USER MESSAGE IMMEDIATELY
     chatBox.innerHTML += `<div class="user-message">${message}</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
     input.value = "";
 
-    const res = await fetch("/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({message})
-    });
+    try {
+        const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: message })
+        });
 
-    const data = await res.json();
-    chatBox.innerHTML += `<div class="bot-message">${data.reply}</div>`;
+        const data = await res.json();
+
+        chatBox.innerHTML += `<div class="bot-message">${data.reply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+
+        chatBox.innerHTML += `<div class="bot-message">😅 AI brain warming up... try again</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    }
 };
 </script>
+
 
 {% endblock %}

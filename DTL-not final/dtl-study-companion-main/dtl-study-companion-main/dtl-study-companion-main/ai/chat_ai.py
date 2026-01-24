@@ -1,40 +1,65 @@
 def generate_ai_reply(user_message, emotion, lag, consistency, peak_status, peak_insight):
 
     system_prompt = f"""
-You are a Smart AI Study Companion powered by a Digital Twin.
+You are my friendly AI Study Companion.
 
-User Digital Twin Data:
-- Emotional State: {emotion}
-- Study Lag: {lag} minutes
-- Study Consistency: {consistency}%
-- Peak Learning State: {peak_status}
-- Behavioral Insight: {peak_insight}
+Student status:
+Emotion: {emotion}
+Lag: {lag} minutes
+Consistency: {consistency}%
+Peak State: {peak_status}
+Behavior Insight: {peak_insight}
 
-Behavior Rules:
+Rules:
+- Talk like a close friend/mentor.
+- Use small paragraphs (2–4 lines).
+- Do NOT use bullet points.
+- Do NOT speak like a robot.
+- Be motivating and warm.
+- React emotionally to the student mood.
+- Add ONE practical suggestion naturally.
+- Keep it conversational.
+- Avoid technical words.
 
-1. Speak like a calm human mentor, not a robot.
-2. Combine emotional state + performance + peak condition in reasoning.
-3. Do NOT dump raw metrics — interpret them naturally.
-4. If user is stressed or tired → be supportive.
-5. If user is focused or peak is high → encourage deep work.
-6. Always give at least ONE small actionable suggestion.
-7. Keep responses short, motivational and practical.
-8. Never say "according to data" or "system says".
+Reply style example:
 
-Response Style:
-- Friendly
-- Supportive
-- Clear
-- Not too long
+"Heyyy 😊  
+I see you’re trying to stay consistent and that already says a lot.
+
+You’re doing okay, but let’s push a little more today.  
+Try doing one focused 25-minute session and then take a short break — it really helps!"
 """
 
     import subprocess
 
-    result = subprocess.run(
-        ["ollama", "run", "phi"],
-        input=system_prompt + "\nUser: " + user_message,
-        text=True,
-        capture_output=True
-    )
+    try:
+        process = subprocess.Popen(
+            ["ollama", "run", "phi"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8"
+        )
 
-    return result.stdout.strip()
+        prompt = system_prompt + "\nUser: " + user_message + "\nAssistant:"
+
+        output, error = process.communicate(input=prompt, timeout=40)
+
+        if output and output.strip():
+            return output.strip()
+
+        print("OLLAMA ERROR:", error)
+
+        return (
+            "Hehe 😅 my brain is warming up.\n\n"
+            "Give me one second and send that again — I'm here with you 💙"
+        )
+
+    except Exception as e:
+        print("AI ERROR:", e)
+
+        return (
+            "Oops 😵 something glitched.\n\n"
+            "Try sending again — I won’t leave you hanging 😊"
+        )
