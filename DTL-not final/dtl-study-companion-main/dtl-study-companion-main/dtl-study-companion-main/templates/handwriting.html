@@ -2,27 +2,35 @@
 {% block content %}
 
 <div class="container mt-4">
+    <h3>✍ Handwriting Generator</h3>
 
-<h3>✍ Handwriting Generator</h3>
+    <form action="/handwriting" method="POST" enctype="multipart/form-data">
 
-<form action="/generate_handwriting" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label>Upload Your Handwriting Sample (Image)</label>
+            <input type="file" name="sample" class="form-control"> 
+        </div>
 
-<div class="mb-3">
-<label>Upload Your Handwriting Sample (Image)</label>
-<input type="file" name="sample" class="form-control" required>
+        <div class="mb-3">
+            <label>Enter Text to Convert</label>
+            <textarea name="text_input" rows="6" class="form-control" required placeholder="Type here..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Generate Handwriting</button>
+    </form>
+
+    {% if result_image %}
+    <div class="mt-5">
+        <h4>Result:</h4>
+        <div class="card p-3">
+            <img src="{{ url_for('static', filename=result_image) }}" class="img-fluid" style="max-width: 500px;">
+            <br>
+            <a href="{{ url_for('static', filename=result_image) }}" download="my_handwriting.png" class="btn btn-success">
+                Download Image
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
-
-<div class="mb-3">
-<label>Enter Text</label>
-<textarea name="text" rows="6" class="form-control" required></textarea>
-</div>
-
-<button type="submit" class="btn btn-primary">
-Generate Handwritten PDF
-</button>
-
-</form>
-
-</div>
-
 {% endblock %}
