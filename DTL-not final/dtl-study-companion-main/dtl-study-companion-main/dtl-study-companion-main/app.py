@@ -8,7 +8,12 @@ import io
 from fpdf import FPDF
 from PyPDF2 import PdfReader
 
-
+import os
+import time
+from flask import Flask, render_template, request, url_for
+from test_font import generate_handwritten_image
+base_dir = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__)
 
 
 from ml.predict import get_digital_twin
@@ -248,11 +253,28 @@ def emotion():
     return render_template("emotion.html", show_layout=True)
 
 # ================= HANDWRITING =================
-
-@app.route("/handwriting")
-@login_required
+@app.route("/handwriting", methods=['GET', 'POST'])
 def handwriting():
-    return render_template("handwriting.html", show_layout=True)
+    result_image = None
+    
+    if request.method == 'POST':
+        user_text = request.form.get('text_input')
+        uploaded_file = request.files.get('sample')
+        saved_sample_path = None 
+
+        if uploaded_file and uploaded_file.filename != '':
+            filename = f"upload_{int(time.time())}.png"
+            upload_folder = os.path.join(base_dir, "static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True) 
+            saved_sample_path = os.path.join(upload_folder, filename)
+            uploaded_file.save(saved_sample_path)
+
+        if user_text:
+            full_path = generate_handwritten_image(user_text, user_sample_path=saved_sample_path)
+            if full_path and "static" in full_path:
+                result_image = os.path.basename(full_path)
+
+    return render_template("handwriting.html", show_layout=True, result_image=result_image)
 
 # ================= TIMER =================
 
